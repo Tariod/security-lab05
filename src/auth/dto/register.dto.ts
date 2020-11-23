@@ -4,7 +4,7 @@ import {
   IsString,
   Matches,
   MaxLength,
-  ValidateIf
+  ValidateIf,
 } from 'class-validator';
 
 const PASSWORD_REQUIREMENTS =
@@ -15,7 +15,7 @@ const PASSWORD_REQUIREMENTS =
 
 const isNotEmpty = (_, value) => {
   return value !== '' && value !== null && value !== undefined;
-}
+};
 
 export class RegisterDTO {
   @IsNotEmpty()
