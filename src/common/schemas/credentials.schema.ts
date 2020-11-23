@@ -4,8 +4,8 @@ import { PasswordHashingVersion } from '../interfaces/password-hashing-version.i
 
 @Schema()
 export class Credentials {
-  @Prop({ required: true, get: value => value.buffer })
-  hash: Buffer;
+  @Prop({ required: true })
+  hash: string;
 
   @Prop({ enum: Object.values(PasswordHashingVersion), required: true })
   hashingVersion: string;

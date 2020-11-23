@@ -1,14 +1,18 @@
 import * as crypto from 'crypto';
+import * as util from 'util';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PasswordHashingVersion } from 'src/common/interfaces/password-hashing-version.interface';
 import { Credentials } from 'src/common/schemas/credentials.schema';
+import { argon2i } from 'argon2-ffi';
 
 @Injectable()
 export class PasswordEncryptionService {
   public async encrypt(password: string): Promise<Credentials> {
-    const hash = await this.hashPassword(password);
+    const passwordSHA512 = await this.hashPassword(password);
+    const salt = await this.getRandomBytes(32);
+    const hashedPassword = await argon2i.hash(passwordSHA512, salt);
     return {
-      hash,
+      hash: hashedPassword,
       hashingVersion: PasswordHashingVersion.ARGON2I,
     };
   }
@@ -17,10 +21,9 @@ export class PasswordEncryptionService {
     credentials: Credentials,
     password: string,
   ): Promise<boolean> {
-    const hash = await this.hashPassword(password);
-
     if (credentials.hashingVersion === PasswordHashingVersion.ARGON2I) {
-      return Buffer.compare(hash, credentials.hash) === 0;
+      const passwordSHA512 = await this.hashPassword(password);
+      return argon2i.verify(credentials.hash, passwordSHA512);
     } else {
       throw new HttpException(
         'Wrong hash method',
@@ -32,5 +35,9 @@ export class PasswordEncryptionService {
   private async hashPassword(password: string): Promise<Buffer> {
     const sha512 = crypto.createHash('sha512');
     return sha512.update(password).digest();
+  }
+
+  private get getRandomBytes() {
+    return util.promisify(crypto.randomBytes);
   }
 }
