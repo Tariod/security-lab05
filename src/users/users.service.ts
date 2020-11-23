@@ -1,54 +1,34 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import {
-  Credentials,
-  StorageVersion,
-} from 'src/auth/interfaces/credentials.interface';
-import { IdentifiedUser, User, Username } from './interfaces/user.inteface';
-
-class UserEntity {
-  constructor(
-    readonly id: number,
-    readonly username: string,
-    readonly firstname: string | null,
-    readonly lastname: string | null,
-    readonly hash: string,
-    readonly storageVersion: StorageVersion,
-  ) {}
-}
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Credentials } from 'src/common/schemas/credentials.schema';
+import { User, UserDocument } from '../common/schemas/user.schema';
 
 @Injectable()
 export class UsersService {
-  private readonly users: UserEntity[] = [];
+  constructor(
+    @InjectModel(User.name) private readonly userModel: Model<UserDocument>,
+  ) {}
 
-  public createUser(user: User, credentials: Credentials): IdentifiedUser {
-    const { username, firstname, lastname } = user;
-    const { hash, storageVersion } = credentials;
-
-    if (this.isUsernameExist(username)) {
+  public async createUser(
+    username: string,
+    credentials: Credentials,
+  ): Promise<User> {
+    const isExist = await this.isUsernameExist(username);
+    if (isExist) {
       throw new HttpException('Username alredy exists', HttpStatus.BAD_REQUEST);
     }
 
-    const id = this.users.length;
-    const entity = new UserEntity(
-      id,
-      username,
-      firstname,
-      lastname,
-      hash,
-      storageVersion,
-    );
-    this.users.push(entity);
-
-    return { id, username, firstname, lastname };
+    const userEntity = new this.userModel({ username, credentials });
+    return userEntity.save();
   }
 
-  public getByUsername(
-    username: Username,
-  ): (IdentifiedUser & Credentials) | null {
-    return this.users.find(user => user.username === username) || null;
+  public async getByUsername(username: string): Promise<User | null> {
+    return this.userModel.findOne({ username }).exec();
   }
 
-  public isUsernameExist(username: Username): boolean {
-    return !!this.users.find(user => user.username === username);
+  public async isUsernameExist(username: string): Promise<boolean> {
+    const user = await this.userModel.findOne({ username }).exec();
+    return user !== null;
   }
 }

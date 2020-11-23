@@ -12,11 +12,7 @@ export class AuthController {
     @Body() registerDTO: RegisterDTO,
   ): Promise<Record<string, string>> {
     const { username, password } = registerDTO;
-    const firstname = registerDTO.firstname || null;
-    const lastname = registerDTO.lastname || null;
-
-    const user = { username, firstname, lastname };
-    return this.authService.register(user, password);
+    return this.authService.register(username, password);
   }
 
   @Post('login')

@@ -9,6 +9,8 @@ import mongoDatabaseConfig from 'config/mongo.database.config';
       imports: [ConfigModule.forFeature(mongoDatabaseConfig)],
       useFactory: async (configService: ConfigService) => ({
         ...configService.get<typeof mongoDatabaseConfig>('mongo.database'),
+        autoIndex: true,
+        useCreateIndex: true,
         retryAttempts: 5,
         retryDelay: 1000,
       }),

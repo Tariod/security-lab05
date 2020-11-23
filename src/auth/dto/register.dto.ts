@@ -1,10 +1,9 @@
 import {
-  IsAlpha,
+  IsAlphanumeric,
   IsNotEmpty,
   IsString,
   Matches,
   MaxLength,
-  ValidateIf,
 } from 'class-validator';
 
 const PASSWORD_REQUIREMENTS =
@@ -13,27 +12,12 @@ const PASSWORD_REQUIREMENTS =
   'minimum of 1 special character (~`!@#$%^&*()-+={}[]|;:\'"<>,./?). ' +
   'Password must be at least 10 characters in length but can be much longer.';
 
-const isNotEmpty = (_, value) => {
-  return value !== '' && value !== null && value !== undefined;
-};
-
 export class RegisterDTO {
   @IsNotEmpty()
   @IsString()
+  @IsAlphanumeric()
   @MaxLength(32)
   username: string;
-
-  @ValidateIf(isNotEmpty)
-  @IsString()
-  @IsAlpha()
-  @MaxLength(32)
-  firstname?: string;
-
-  @ValidateIf(isNotEmpty)
-  @IsString()
-  @IsAlpha()
-  @MaxLength(32)
-  lastname?: string;
 
   @IsNotEmpty()
   @IsString()

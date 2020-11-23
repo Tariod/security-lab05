@@ -1,47 +1,41 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import {
-  IdentifiedUser,
-  User,
-  Username,
-} from 'src/users/interfaces/user.inteface';
+import { User } from 'src/common/schemas/user.schema';
 import { UsersService } from 'src/users/users.service';
-import {
-  Credentials,
-  Password,
-  StorageVersion,
-} from './interfaces/credentials.interface';
+import { PasswordEncryptionService } from './password-encryption.service';
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly passwordEncryptionService: PasswordEncryptionService,
+    private readonly usersService: UsersService,
+  ) {}
 
   private async validateUser(
-    username: Username,
-    password: Password,
-  ): Promise<(IdentifiedUser & Credentials) | null> {
+    username: string,
+    password: string,
+  ): Promise<User | null> {
     const user = await this.usersService.getByUsername(username);
-    if (user && user.hash === password) {
+    if (
+      user &&
+      (await this.passwordEncryptionService.verify(user.credentials, password))
+    ) {
       return user;
     }
     return null;
   }
 
   public async register(
-    user: User,
-    password: Password,
+    username: string,
+    password: string,
   ): Promise<Record<string, string>> {
-    const credentials: Credentials = {
-      hash: password,
-      storageVersion: StorageVersion.ARGON2I,
-    };
-
-    user = await this.usersService.createUser(user, credentials);
+    const credentials = await this.passwordEncryptionService.encrypt(password);
+    const user = await this.usersService.createUser(username, credentials);
     return { message: 'Success' };
   }
 
   public async login(
-    username: Username,
-    password: Password,
+    username: string,
+    password: string,
   ): Promise<Record<string, string>> {
     const user = await this.validateUser(username, password);
     if (!user) {
