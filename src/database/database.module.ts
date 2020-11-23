@@ -1,18 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { MongooseModule } from '@nestjs/mongoose';
 import mongoDatabaseConfig from 'config/mongo.database.config';
 
 @Module({
   imports: [
-    TypeOrmModule.forRootAsync({
+    MongooseModule.forRootAsync({
       imports: [ConfigModule.forFeature(mongoDatabaseConfig)],
-      name: 'mongo_connection',
-      useFactory: (configService: ConfigService) => ({
+      useFactory: async (configService: ConfigService) => ({
         ...configService.get<typeof mongoDatabaseConfig>('mongo.database'),
-        type: 'mongodb',
-        entities: [],
-        synchronize: true,
         retryAttempts: 5,
         retryDelay: 1000,
       }),
