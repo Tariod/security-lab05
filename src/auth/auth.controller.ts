@@ -8,15 +8,13 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  public register(
-    @Body() registerDTO: RegisterDTO,
-  ): Promise<Record<string, string>> {
+  public register(@Body() registerDTO: RegisterDTO): Promise<string> {
     const { username, password } = registerDTO;
     return this.authService.register(username, password);
   }
 
   @Post('login')
-  public login(@Body() loginDTO: LoginDTO): Promise<Record<string, string>> {
+  public login(@Body() loginDTO: LoginDTO): Promise<string> {
     const { username, password } = loginDTO;
     return this.authService.login(username, password);
   }

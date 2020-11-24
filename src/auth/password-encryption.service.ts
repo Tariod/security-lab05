@@ -1,8 +1,10 @@
 import * as crypto from 'crypto';
 import * as util from 'util';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
-import { PasswordHashingVersion } from 'src/common/interfaces/password-hashing-version.interface';
-import { Credentials } from 'src/common/schemas/credentials.schema';
+import {
+  Credentials,
+  PasswordHashingVersion,
+} from 'src/common/interfaces/credentials.interface';
 import { argon2i } from 'argon2-ffi';
 
 @Injectable()
@@ -10,6 +12,8 @@ export class PasswordEncryptionService {
   public async encrypt(password: string): Promise<Credentials> {
     const passwordSHA512 = await this.hashPassword(password);
     const salt = await this.getRandomBytes(32);
+    // TODO
+    // Default timeCost = 3,memoryCost=4096,parallelism=1, hashLength=32.
     const hashedPassword = await argon2i.hash(passwordSHA512, salt);
     return {
       hash: hashedPassword,
