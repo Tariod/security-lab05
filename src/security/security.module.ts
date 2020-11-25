@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { KMS, Credentials } from 'aws-sdk';
 import awsConnectConfig from 'config/aws-connect.config';
+import awsKeyIdConfig from 'config/aws-key-id.config';
 import { KEY_MANAGEMENT_SERVICE } from './security.constants';
 import { SecurityService } from './security.service';
 
@@ -22,7 +23,10 @@ const KeyManagementService = {
 };
 
 @Module({
-  imports: [ConfigModule.forFeature(awsConnectConfig)],
+  imports: [
+    ConfigModule.forFeature(awsConnectConfig),
+    ConfigModule.forFeature(awsKeyIdConfig),
+  ],
   providers: [KeyManagementService, SecurityService],
   exports: [SecurityService],
 })

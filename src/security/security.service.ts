@@ -1,5 +1,7 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { ConfigType } from '@nestjs/config';
 import { KMS } from 'aws-sdk';
+import awsKeyIdConfig from 'config/aws-key-id.config';
 import {
   EncryptedData,
   DataCipherVersion,
@@ -15,12 +17,16 @@ import {
 
 @Injectable()
 export class SecurityService {
-  constructor(@Inject(KEY_MANAGEMENT_SERVICE) private readonly kms: KMS) {}
+  constructor(
+    @Inject(awsKeyIdConfig.KEY)
+    private readonly keyIdConfig: ConfigType<typeof awsKeyIdConfig>,
+    @Inject(KEY_MANAGEMENT_SERVICE)
+    private readonly kms: KMS,
+  ) {}
 
   public async encrypt(data: Buffer): Promise<EncryptedData> {
-    // TODO store KeyId secure
     const dek = await this.generateDataKey({
-      KeyId: '6a0627df-fca8-4cd0-a1f3-e1c26254093a',
+      KeyId: this.keyIdConfig.keyId,
       NumberOfBytes: KEY_SIZE,
     });
     const nonce = await randomBytesBuffer(NONCE_SIZE);
@@ -44,9 +50,12 @@ export class SecurityService {
     const { nonce, ciphertext, cipherVersion } = encryptedData;
     if (cipherVersion === DataCipherVersion.XCHaCha20_Poly1305) {
       return xchacha20poly1305_decrypt(ciphertext, nonce, dek as Buffer);
+    } else {
+      throw new HttpException(
+        'Wrong cipher version',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-
-    return null;
   }
 
   private generateDataKey(

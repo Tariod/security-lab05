@@ -11,7 +11,6 @@ export class UserEntity {
   @Prop({ index: true, unique: true })
   username: string;
 
-  // TODO exclude
   @Prop({ type: CredentialsSchema, required: true })
   credentials: CredentialsEntity;
 

@@ -43,6 +43,7 @@ export class UserDaoProvider {
     const encryptedMobilephone = await this.securityService.encrypt(
       Buffer.from(mobilephone),
     );
+
     const userEntity = new this.userModel({
       username,
       mobilephone: encryptedMobilephone,
