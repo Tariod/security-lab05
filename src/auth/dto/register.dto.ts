@@ -1,5 +1,6 @@
 import {
   IsAlphanumeric,
+  IsMobilePhone,
   IsNotEmpty,
   IsString,
   Matches,
@@ -26,4 +27,7 @@ export class RegisterDTO {
     { message: PASSWORD_REQUIREMENTS },
   )
   password: string;
+
+  @IsMobilePhone('uk-UA')
+  mobilephone: string;
 }

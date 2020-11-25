@@ -9,8 +9,7 @@ export class AuthController {
 
   @Post('register')
   public register(@Body() registerDTO: RegisterDTO): Promise<string> {
-    const { username, password } = registerDTO;
-    return this.authService.register(username, password);
+    return this.authService.register(registerDTO);
   }
 
   @Post('login')

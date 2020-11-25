@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { LOGIN_SUCCESS, REGISTRATION_SUCCESS } from 'src/common/constants';
 import { User } from 'src/common/interfaces/user.interface';
 import { UserDaoProvider } from 'src/user-dao/user-dao.provider';
+import { RegisterDTO } from './dto/register.dto';
 import { PasswordEncryptionService } from './password-encryption.service';
 
 @Injectable()
@@ -26,9 +27,10 @@ export class AuthService {
     return null;
   }
 
-  public async register(username: string, password: string): Promise<string> {
+  public async register(registerDTO: RegisterDTO): Promise<string> {
+    const { password, ...user } = registerDTO;
     const credentials = await this.passwordEncryptionService.encrypt(password);
-    await this.userDAO.save({ username, credentials });
+    await this.userDAO.save({ ...user, credentials });
     return REGISTRATION_SUCCESS;
   }
 
