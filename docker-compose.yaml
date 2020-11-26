@@ -28,6 +28,23 @@ services:
     ports:
       - 27017:27017
 
+  nginx:
+    build: config/nginx-conf
+    restart: always
+    secrets:
+      - source: nginx_cert
+        target: /etc/nginx/ssl/example.com.crt
+      - source: nginx_key
+        target: /etc/nginx/ssl/example.com.key
+    ports:
+      - 80:80
+      - 443:443
+
+secrets:
+  nginx_cert:
+    file: ./certs/server/server.crt
+  nginx_key:
+    file: ./certs/server/server.key
 volumes:
   kms-data:
   mongo-data:
