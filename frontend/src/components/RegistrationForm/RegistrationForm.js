@@ -94,7 +94,7 @@ function RegistrationForm() {
           {successful && (
             <div className="form-group">
               <div className="alert alert-success" role="alert">
-                User login successfuly!
+                User register successfuly!
               </div>
             </div>
           )}

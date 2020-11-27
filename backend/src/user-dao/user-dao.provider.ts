@@ -20,15 +20,19 @@ export class UserDaoProvider {
     if (user === null) {
       return null;
     }
-    const { mobilephone: ciphertext } = user;
-    const mobilephone = await this.securityService.decrypt(ciphertext);
+    const { mobilephone: ciphertext, credentials } = user;
+
+    const [mobilephone, hash] = await Promise.all([
+      this.securityService.decrypt(ciphertext),
+      this.securityService.decrypt(credentials.hash),
+    ]);
+
     return {
       username: user.username,
       mobilephone: mobilephone.toString(),
       credentials: {
-        hash: user.credentials.hash,
-        hashingVersion: user.credentials
-          .hashingVersion as PasswordHashingVersion,
+        hash: hash.toString(),
+        hashingVersion: credentials.hashingVersion as PasswordHashingVersion,
       },
     };
   }
@@ -40,14 +44,19 @@ export class UserDaoProvider {
     if (isExist) {
       throw new HttpException('Username alredy exists', HttpStatus.BAD_REQUEST);
     }
-    const encryptedMobilephone = await this.securityService.encrypt(
-      Buffer.from(mobilephone),
-    );
+
+    const [encryptedMobilephone, encryptedPassword] = await Promise.all([
+      this.securityService.encrypt(Buffer.from(mobilephone)),
+      this.securityService.encrypt(Buffer.from(credentials.hash)),
+    ]);
 
     const userEntity = new this.userModel({
       username,
       mobilephone: encryptedMobilephone,
-      credentials,
+      credentials: {
+        hash: encryptedPassword,
+        hashingVersion: credentials.hashingVersion,
+      },
     });
     await userEntity.save();
 

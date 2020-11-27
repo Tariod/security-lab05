@@ -7,8 +7,11 @@ export class SearchService {
   constructor(private readonly userDAO: UserDaoProvider) {}
 
   public findOne(username: string): Promise<User | null> {
-    if (!(new RegExp(/^\w{1,16}$/).test(username))) {
-      throw new HttpException('Username must contain only letters and numbers.', HttpStatus.BAD_REQUEST);
+    if (!new RegExp(/^\w{1,16}$/).test(username)) {
+      throw new HttpException(
+        'Username must contain only letters and numbers.',
+        HttpStatus.BAD_REQUEST,
+      );
     }
     return this.userDAO.get(username);
   }

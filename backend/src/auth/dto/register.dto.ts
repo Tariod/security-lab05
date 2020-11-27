@@ -5,13 +5,13 @@ import {
   IsString,
   Matches,
   MaxLength,
+  MinLength,
 } from 'class-validator';
 
 const PASSWORD_REQUIREMENTS =
   'Password must contain a minimum of 1 lower case letter, ' +
   '1 upper case letter, 1 numeric character, ' +
-  'minimum of 1 special character (~`!@#$%^&*()-+={}[]|;:\'"<>,./?). ' +
-  'Password must be at least 10 characters in length but can be much longer.';
+  'minimum of 1 special character';
 
 export class RegisterDTO {
   @IsNotEmpty()
@@ -22,6 +22,7 @@ export class RegisterDTO {
 
   @IsNotEmpty()
   @IsString()
+  @MinLength(10)
   @Matches(
     /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[~`!@#$%^&*()-+={}\[\]|\\;:'"<>,./?]).{10,}$/,
     { message: PASSWORD_REQUIREMENTS },
